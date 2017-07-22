@@ -3,7 +3,7 @@ package main
 import (
 	//	"bytes"
 	//	"fmt"
-	"github.com/gameraccoon/telegram-random-shuffle-bot/database"
+	// "github.com/gameraccoon/telegram-random-shuffle-bot/database"
 	"github.com/gameraccoon/telegram-random-shuffle-bot/dialogFactories"
 	"github.com/gameraccoon/telegram-random-shuffle-bot/processing"
 	//"github.com/gameraccoon/telegram-random-shuffle-bot/telegramChat"
@@ -17,21 +17,9 @@ type ProcessorFunc func(*processing.ProcessData, *dialogFactories.DialogManager)
 
 type ProcessorFuncMap map[string]ProcessorFunc
 
-func sendEditingGuide(data *processing.ProcessData, dialogManager *dialogFactories.DialogManager) {
-	dialog := dialogManager.MakeDialog("ed", data)
-	if dialog != nil {
-		data.Static.Chat.SendDialog(dialog, data.ChatId)
-	}
-}
-
 func startCommand(data *processing.ProcessData, dialogManager *dialogFactories.DialogManager) {
 	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("hello_message"))
-}
-
-func setVariants(db *database.Database, id int64, text *string) (ok bool) {
-	//variants := strings.Split(*text, "\n")
-	//db.SetQuestionVariants(questionId, variants)
-	return true
+	data.Static.Chat.SendDialog(data.ChatId, dialogManager.MakeDialog("mn", data))
 }
 
 func makeUserCommandProcessors() ProcessorFuncMap {
@@ -70,13 +58,9 @@ func processCommand(data *processing.ProcessData, dialogManager *dialogFactories
 }
 
 func processPlainMessage(data *processing.ProcessData, dialogManager *dialogFactories.DialogManager) {
-	if _, ok := data.Static.UserStates[data.UserId]; ok {
-		success := dialogManager.ProcessText(data)
+	success := dialogManager.ProcessText(data)
 
-		if !success {
-			data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("warn_unknown_command"))
-		}
-	} else {
+	if !success {
 		data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("warn_unknown_command"))
 	}
 }

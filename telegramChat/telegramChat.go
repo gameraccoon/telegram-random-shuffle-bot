@@ -48,7 +48,7 @@ func appendCommand(buffer *bytes.Buffer, dialogId string, variantId string, vari
 	buffer.WriteString(fmt.Sprintf("\n/%s_%s - %s", dialogId, variantId, variantText))
 }
 
-func (telegramChat *TelegramChat) SendDialog(dialog *dialog.Dialog, chatId int64) {
+func (telegramChat *TelegramChat) SendDialog(chatId int64, dialog *dialog.Dialog) {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(dialog.Text)

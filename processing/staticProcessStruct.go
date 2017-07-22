@@ -13,34 +13,53 @@ type StaticConfiguration struct {
 }
 
 type UserState struct {
-	AwaitingTextProcessor *string
+	awaitingTextProcessor *string
+	currentPage int
 }
 
 type StaticProccessStructs struct {
 	Chat       chat.Chat
 	Db         *database.Database
-	UserStates map[int64]UserState
 	Timers     map[int64]time.Time
 	Config     *StaticConfiguration
 	Trans      i18n.TranslateFunc
+	userStates map[int64]UserState
+}
+
+func (staticData *StaticProccessStructs) Init() {
+	staticData.userStates = make(map[int64]UserState)
 }
 
 func (staticData *StaticProccessStructs) SetUserStateTextProcessor(userId int64, proessor string) {
-	state := staticData.UserStates[userId]
-	state.AwaitingTextProcessor = &proessor
-	staticData.UserStates[userId] = state
+	state := staticData.userStates[userId]
+	state.awaitingTextProcessor = &proessor
+	staticData.userStates[userId] = state
 }
 
 func (staticData *StaticProccessStructs) ClearUserStateTextProcessor(userId int64) {
-	state := staticData.UserStates[userId]
-	state.AwaitingTextProcessor = nil
-	staticData.UserStates[userId] = state
+	state := staticData.userStates[userId]
+	state.awaitingTextProcessor = nil
+	staticData.userStates[userId] = state
 }
 
 func (staticData *StaticProccessStructs) GetUserStateTextProcessor(userId int64) *string {
-	if state, ok := staticData.UserStates[userId]; ok {
-		return state.AwaitingTextProcessor
+	if state, ok := staticData.userStates[userId]; ok {
+		return state.awaitingTextProcessor
 	} else {
 		return nil
+	}
+}
+
+func (staticData *StaticProccessStructs) SetUserStateCurrentPage(userId int64, page int) {
+	state := staticData.userStates[userId]
+	state.currentPage = page
+	staticData.userStates[userId] = state
+}
+
+func (staticData *StaticProccessStructs) GetUserStateCurrentPage(userId int64) int {
+	if state, ok := staticData.userStates[userId]; ok {
+		return state.currentPage
+	} else {
+		return 0
 	}
 }

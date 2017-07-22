@@ -66,8 +66,6 @@ func main() {
 
 	database.UpdateVersion(db)
 
-	userStates := make(map[int64]processing.UserState)
-
 	chat, err := telegramChat.MakeTelegramChat(apiToken)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -78,16 +76,17 @@ func main() {
 	chat.SetDebugModeEnabled(config.ExtendedLog)
 
 	dialogManager := &(dialogFactories.DialogManager{})
-	dialogManager.RegisterDialogFactory("mn", dialogFactories.MakeMenuDialogFactory(trans))
+	dialogManager.RegisterDialogFactory("mn", dialogFactories.MakeListsDialogFactory(trans))
 	dialogManager.InitTextProcessors()
 
 	staticData := &processing.StaticProccessStructs{
-		Chat:       chat,
-		Db:         db,
-		Config:     &config,
-		Trans:      trans,
-		UserStates: userStates,
+		Chat:   chat,
+		Db:     db,
+		Config: &config,
+		Trans:  trans,
 	}
+
+	staticData.Init()
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
