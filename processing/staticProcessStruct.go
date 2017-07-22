@@ -7,18 +7,13 @@ import (
 	"time"
 )
 
-type UserState int
-
-const (
-	Normal UserState = iota
-	WaitingText
-	WaitingVariants
-	WaitingRules
-)
-
 type StaticConfiguration struct {
 	Language    string
 	ExtendedLog bool
+}
+
+type UserState struct {
+	AwaitingTextProcessor *string
 }
 
 type StaticProccessStructs struct {
@@ -28,4 +23,24 @@ type StaticProccessStructs struct {
 	Timers     map[int64]time.Time
 	Config     *StaticConfiguration
 	Trans      i18n.TranslateFunc
+}
+
+func (staticData *StaticProccessStructs) SetUserStateTextProcessor(userId int64, proessor string) {
+	state := staticData.UserStates[userId]
+	state.AwaitingTextProcessor = &proessor
+	staticData.UserStates[userId] = state
+}
+
+func (staticData *StaticProccessStructs) ClearUserStateTextProcessor(userId int64) {
+	state := staticData.UserStates[userId]
+	state.AwaitingTextProcessor = nil
+	staticData.UserStates[userId] = state
+}
+
+func (staticData *StaticProccessStructs) GetUserStateTextProcessor(userId int64) *string {
+	if state, ok := staticData.UserStates[userId]; ok {
+		return state.AwaitingTextProcessor
+	} else {
+		return nil
+	}
 }

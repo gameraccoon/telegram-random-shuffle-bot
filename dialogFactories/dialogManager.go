@@ -7,6 +7,7 @@ import (
 
 type DialogManager struct {
 	dialogs map[string]*DialogFactory
+	textProcessors textInputProcessorManager
 }
 
 func (dialogManager *DialogManager) RegisterDialogFactory(id string, dialogFactory *DialogFactory) {
@@ -16,6 +17,10 @@ func (dialogManager *DialogManager) RegisterDialogFactory(id string, dialogFacto
 
 	dialogManager.dialogs[id] = dialogFactory
 	dialogFactory.id = id
+}
+
+func (dialogManager *DialogManager) InitTextProcessors() {
+	dialogManager.textProcessors = getTextInputProcessorManager()
 }
 
 func (dialogManager *DialogManager) MakeDialog(dialogId string, data *processing.ProcessData) (dialog *dialog.Dialog) {
@@ -29,10 +34,13 @@ func (dialogManager *DialogManager) MakeDialog(dialogId string, data *processing
 func (dialogManager *DialogManager) ProcessVariant(dialogId string, variantId string, data *processing.ProcessData) (processed bool) {
 	factory := dialogManager.getDialogFactory(dialogId)
 	if factory != nil {
-		factory.ProcessVariant(variantId, data)
-		processed = true
+		processed = factory.ProcessVariant(variantId, data)
 	}
 	return
+}
+
+func (dialogManager *DialogManager) ProcessText(data *processing.ProcessData) bool {
+	return dialogManager.textProcessors.processText(data)
 }
 
 func (dialogManager *DialogManager) getDialogFactory(id string) *DialogFactory {

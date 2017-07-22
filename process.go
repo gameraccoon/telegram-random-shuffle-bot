@@ -69,26 +69,12 @@ func processCommand(data *processing.ProcessData, dialogManager *dialogFactories
 	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("warn_unknown_command"))
 }
 
-func processSetVariantsContent(data *processing.ProcessData, dialogManager *dialogFactories.DialogManager) {
-	// questionId := data.Static.Db.GetUserEditingQuestion(data.UserId)
-	// ok := setVariants(data.Static.Db, questionId, &data.Message)
-	// if ok {
-	// 	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("say_variants_is_set"))
-	// 	sendEditingGuide(data, dialogManager)
-	// 	delete(data.Static.UserStates, data.ChatId)
-	// } else {
-	// 	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("warn_bad_variants"))
-	// }
-}
-
 func processPlainMessage(data *processing.ProcessData, dialogManager *dialogFactories.DialogManager) {
-	if userState, ok := data.Static.UserStates[data.ChatId]; ok {
-		switch userState {
-		case processing.WaitingVariants:
-			processSetVariantsContent(data, dialogManager)
-		default:
+	if _, ok := data.Static.UserStates[data.UserId]; ok {
+		success := dialogManager.ProcessText(data)
+
+		if !success {
 			data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("warn_unknown_command"))
-			delete(data.Static.UserStates, data.ChatId)
 		}
 	} else {
 		data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("warn_unknown_command"))

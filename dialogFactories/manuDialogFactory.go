@@ -24,4 +24,5 @@ func getMenuText(data *processing.ProcessData) string {
 }
 
 func openListDialogCommand(data *processing.ProcessData) {
+	data.Static.SetUserStateTextProcessor(data.UserId, "list_name")
 }

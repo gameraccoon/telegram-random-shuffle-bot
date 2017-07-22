@@ -28,12 +28,14 @@ func (dialogFactory *DialogFactory) MakeDialog(data *processing.ProcessData) *di
 	return &dialog
 }
 
-func (dialog *DialogFactory) ProcessVariant(id string, data *processing.ProcessData) {
+func (dialog *DialogFactory) ProcessVariant(id string, data *processing.ProcessData) bool {
 	for _, variant := range dialog.variants {
 		if variant.id == id {
 			variant.process(data)
+			return true
 		}
 	}
+	return false
 }
 
 func (dialogFactory *DialogFactory) getText(data *processing.ProcessData) string {

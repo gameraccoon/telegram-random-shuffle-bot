@@ -79,6 +79,7 @@ func main() {
 
 	dialogManager := &(dialogFactories.DialogManager{})
 	dialogManager.RegisterDialogFactory("mn", dialogFactories.MakeMenuDialogFactory(trans))
+	dialogManager.InitTextProcessors()
 
 	staticData := &processing.StaticProccessStructs{
 		Chat:       chat,
