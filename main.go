@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gameraccoon/telegram-random-shuffle-bot/database"
 	"github.com/gameraccoon/telegram-random-shuffle-bot/dialogFactories"
+	"github.com/gameraccoon/telegram-random-shuffle-bot/dialogManager"
 	"github.com/gameraccoon/telegram-random-shuffle-bot/processing"
 	"github.com/gameraccoon/telegram-random-shuffle-bot/telegramChat"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
@@ -75,7 +76,7 @@ func main() {
 
 	chat.SetDebugModeEnabled(config.ExtendedLog)
 
-	dialogManager := &(dialogFactories.DialogManager{})
+	dialogManager := &(dialogManager.DialogManager{})
 	dialogManager.RegisterDialogFactory("mn", dialogFactories.MakeListsDialogFactory(trans))
 	dialogManager.InitTextProcessors()
 

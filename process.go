@@ -4,7 +4,8 @@ import (
 	//	"bytes"
 	//	"fmt"
 	// "github.com/gameraccoon/telegram-random-shuffle-bot/database"
-	"github.com/gameraccoon/telegram-random-shuffle-bot/dialogFactories"
+	// "github.com/gameraccoon/telegram-random-shuffle-bot/dialogFactories"
+	"github.com/gameraccoon/telegram-random-shuffle-bot/dialogManager"
 	"github.com/gameraccoon/telegram-random-shuffle-bot/processing"
 	//"github.com/gameraccoon/telegram-random-shuffle-bot/telegramChat"
 	//"github.com/gameraccoon/telegram-random-shuffle-bot/dialog"
@@ -13,11 +14,11 @@ import (
 	"strings"
 )
 
-type ProcessorFunc func(*processing.ProcessData, *dialogFactories.DialogManager)
+type ProcessorFunc func(*processing.ProcessData, *dialogManager.DialogManager)
 
 type ProcessorFuncMap map[string]ProcessorFunc
 
-func startCommand(data *processing.ProcessData, dialogManager *dialogFactories.DialogManager) {
+func startCommand(data *processing.ProcessData, dialogManager *dialogManager.DialogManager) {
 	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("hello_message"))
 	data.Static.Chat.SendDialog(data.ChatId, dialogManager.MakeDialog("mn", data))
 }
@@ -28,7 +29,7 @@ func makeUserCommandProcessors() ProcessorFuncMap {
 	}
 }
 
-func processCommandByProcessors(data *processing.ProcessData, processors *ProcessorFuncMap, dialogManager *dialogFactories.DialogManager) bool {
+func processCommandByProcessors(data *processing.ProcessData, processors *ProcessorFuncMap, dialogManager *dialogManager.DialogManager) bool {
 	processor, ok := (*processors)[data.Command]
 	if ok {
 		processor(data, dialogManager)
@@ -37,7 +38,7 @@ func processCommandByProcessors(data *processing.ProcessData, processors *Proces
 	return ok
 }
 
-func processCommand(data *processing.ProcessData, dialogManager *dialogFactories.DialogManager, processors *ProcessorFuncMap) {
+func processCommand(data *processing.ProcessData, dialogManager *dialogManager.DialogManager, processors *ProcessorFuncMap) {
 	// process dialogs
 	ids := strings.Split(data.Command, "_")
 	if len(ids) >= 2 {
@@ -57,7 +58,7 @@ func processCommand(data *processing.ProcessData, dialogManager *dialogFactories
 	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("warn_unknown_command"))
 }
 
-func processPlainMessage(data *processing.ProcessData, dialogManager *dialogFactories.DialogManager) {
+func processPlainMessage(data *processing.ProcessData, dialogManager *dialogManager.DialogManager) {
 	success := dialogManager.ProcessText(data)
 
 	if !success {
@@ -65,7 +66,7 @@ func processPlainMessage(data *processing.ProcessData, dialogManager *dialogFact
 	}
 }
 
-func processUpdate(update *tgbotapi.Update, staticData *processing.StaticProccessStructs, dialogManager *dialogFactories.DialogManager, processors *ProcessorFuncMap) {
+func processUpdate(update *tgbotapi.Update, staticData *processing.StaticProccessStructs, dialogManager *dialogManager.DialogManager, processors *ProcessorFuncMap) {
 	data := processing.ProcessData{
 		Static: staticData,
 		ChatId: update.Message.Chat.ID,

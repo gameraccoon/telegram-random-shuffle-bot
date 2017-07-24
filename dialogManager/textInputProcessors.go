@@ -1,4 +1,4 @@
-package dialogFactories
+package dialogManager
 
 import (
 	"github.com/gameraccoon/telegram-random-shuffle-bot/processing"
