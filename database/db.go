@@ -18,10 +18,8 @@ type Database struct {
 	conn *sql.DB
 }
 
-func sanitizeString(input string) (result string) {
-	result = input
-	result = strings.Replace(result, "'", "''", -1)
-	return
+func sanitizeString(input string) string {
+	return strings.Replace(input, "'", "''", -1)
 }
 
 func (database *Database) execQuery(query string) {

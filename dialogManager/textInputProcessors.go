@@ -32,14 +32,7 @@ func (textProcessorManager *textInputProcessorManager) processText(data *process
 }
 
 func processSetVariantsContent(data *processing.ProcessData) bool {
-	// questionId := data.Static.Db.GetUserEditingQuestion(data.UserId)
-	// ok := setVariants(data.Static.Db, questionId, &data.Message)
-	// if ok {
+	data.Static.Db.CreateList(data.UserId, data.Message)
 	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("say_variants_is_set"))
-	// 	sendEditingGuide(data, dialogManager)
-	data.Static.ClearUserStateTextProcessor(data.UserId)
-	// } else {
-	// 	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("warn_bad_variants"))
-	// }
 	return true
 }
