@@ -60,7 +60,7 @@ func (database *Database) Connect(fileName string) error {
 		" lists(id INTEGER NOT NULL PRIMARY KEY" +
 		",user_id INTEGER" +
 		",name STRING" +
-		",last_item_id INTEGER" +
+		",last_item_id INTEGER NOT NULL" +
 		",FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL" +
 		")")
 
@@ -201,7 +201,7 @@ func (database *Database) GetUserChatId(userId int64) (chatId int64) {
 }
 
 func (database *Database) GetUserLists(userId int64) (ids []int64, texts []string) {
-	rows, err := database.conn.Query(fmt.Sprintf("SELECT id, text FROM lists WHERE user_id=%d", userId))
+	rows, err := database.conn.Query(fmt.Sprintf("SELECT id, name FROM lists WHERE user_id=%d", userId))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -270,18 +270,18 @@ func (database *Database) GetLastItem(listId int64) (item_id int64) {
 }
 
 func (database *Database) SetLastItem(listId int64, lastItemId int64) {
-	database.execQuery(fmt.Sprintf("UPDATE TABLE lists SET last_item_id=%d WHERE list_id=%d", lastItemId, listId))
+	database.execQuery(fmt.Sprintf("UPDATE lists SET last_item_id=%d WHERE id=%d", lastItemId, listId))
 }
 
 func (database *Database) CreateList(userId int64, name string) {
-	database.execQuery(fmt.Sprintf("INSERT INTO lists (user_id, name) VALUES (%d, %s)", userId, name))
+	database.execQuery(fmt.Sprintf("INSERT INTO lists (user_id, name, last_item_id) VALUES (%d, '%s', -1)", userId, name))
 }
 
 func (database *Database) AddItemsToList(listId int64, items []string) {
 	var buffer bytes.Buffer
 
 	for _, item := range items {
-		buffer.WriteString(fmt.Sprintf("INSERT INTO list_items (list_id, text) VALUES (%d, %s);", listId, item))
+		buffer.WriteString(fmt.Sprintf("INSERT INTO list_items (list_id, text) VALUES (%d, '%s');", listId, item))
 	}
 
 	database.execQuery(fmt.Sprintf("BEGIN TRANSACTION;" +
