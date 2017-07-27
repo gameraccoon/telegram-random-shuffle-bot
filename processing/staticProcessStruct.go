@@ -3,6 +3,7 @@ package processing
 import (
 	"github.com/gameraccoon/telegram-random-shuffle-bot/chat"
 	"github.com/gameraccoon/telegram-random-shuffle-bot/database"
+	"github.com/gameraccoon/telegram-random-shuffle-bot/dialog"
 	"github.com/nicksnyder/go-i18n/i18n"
 	"time"
 )
@@ -23,6 +24,7 @@ type StaticProccessStructs struct {
 	Timers     map[int64]time.Time
 	Config     *StaticConfiguration
 	Trans      i18n.TranslateFunc
+	MakeDialogFn func(string, int64, *StaticProccessStructs)*dialog.Dialog
 	userStates map[int64]UserState
 }
 

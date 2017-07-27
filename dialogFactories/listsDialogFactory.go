@@ -10,18 +10,27 @@ import (
 type variantPrototype struct {
 	id string
 	text string
+	textFn func(*listDialogCache) string
 	// nil if the variant is always active
-	isActiveFn func(*listDialogFactory, *processing.ProcessData) bool
+	isActiveFn func(*listDialogCache) bool
 	process func(*processing.ProcessData) bool
+}
+
+type cachedItem struct {
+	id int64
+	text string
+}
+
+type listDialogCache struct {
+	cachedItems []cachedItem
+	currentPage int
+	pagesCount int
+	countOnPage int
 }
 
 type listDialogFactory struct {
 	text string
 	variants []variantPrototype
-	cachedItems map[int64]string
-	currentPage int
-	pagesCount int
-	isInited bool
 }
 
 func MakeListsDialogFactory(trans i18n.TranslateFunc) dialogFactory.DialogFactory {
@@ -36,33 +45,45 @@ func MakeListsDialogFactory(trans i18n.TranslateFunc) dialogFactory.DialogFactor
 			},
 			variantPrototype{
 				id: "first",
-				text: "item1",
-				isActiveFn: nil,
+				textFn: getFirstItemText,
+				isActiveFn: isFirstElementVisible,
 				process: addList,
 			},
 			variantPrototype{
 				id: "second",
-				text: "item2",
-				isActiveFn: nil,
+				textFn: getSecondItemText,
+				isActiveFn: isSecondElementVisible,
 				process: addList,
 			},
 			variantPrototype{
 				id: "third",
-				text: "item3",
-				isActiveFn: nil,
+				textFn: getThirdItemText,
+				isActiveFn: isThirdElementVisible,
+				process: addList,
+			},
+			variantPrototype{
+				id: "fourth",
+				textFn: getFourthItemText,
+				isActiveFn: isFourthElementVisible,
+				process: addList,
+			},
+			variantPrototype{
+				id: "fifth",
+				textFn: getFifthItemText,
+				isActiveFn: isFifthElementVisible,
 				process: addList,
 			},
 			variantPrototype{
 				id: "back",
 				text: trans("back_btn"),
 				isActiveFn: isNotTheFirstPage,
-				process: addList,
+				process: moveBack,
 			},
 			variantPrototype{
 				id: "fwd",
 				text: trans("fwd_btn"),
 				isActiveFn: isNotTheLastPage,
-				process: addList,
+				process: moveForward,
 			},
 		},
 	})
@@ -72,19 +93,61 @@ func getMenuText(data *processing.ProcessData) string {
 	return "Choose a list"
 }
 
-func isTheFirstPage(factory *listDialogFactory, data *processing.ProcessData) bool {
-	factory.cacheItems(data)
-	return factory.currentPage == 0
+func isTheFirstPage(cahce *listDialogCache) bool {
+	return cahce.currentPage == 0
 }
 
-func isNotTheFirstPage(factory *listDialogFactory, data *processing.ProcessData) bool {
-	factory.cacheItems(data)
-	return factory.currentPage > 0
+func isNotTheFirstPage(cahce *listDialogCache) bool {
+	return cahce.currentPage > 0
 }
 
-func isNotTheLastPage(factory *listDialogFactory, data *processing.ProcessData) bool {
-	factory.cacheItems(data)
-	return factory.currentPage + 1 < factory.pagesCount
+func isNotTheLastPage(cahce *listDialogCache) bool {
+	return cahce.currentPage + 1 < cahce.pagesCount
+}
+
+func isFirstElementVisible(cahce *listDialogCache) bool {
+	return cahce.countOnPage > 0
+}
+
+func isSecondElementVisible(cahce *listDialogCache) bool {
+	return cahce.countOnPage > 1
+}
+
+func isThirdElementVisible(cahce *listDialogCache) bool {
+	return cahce.countOnPage > 2
+}
+
+func isFourthElementVisible(cahce *listDialogCache) bool {
+	return cahce.countOnPage > 3
+}
+
+func isFifthElementVisible(cahce *listDialogCache) bool {
+	return cahce.countOnPage > 4
+}
+
+func getFirstItemText(cahce *listDialogCache) string {
+	index := cahce.currentPage * 4
+	return cahce.cachedItems[int64(index)].text
+}
+
+func getSecondItemText(cahce *listDialogCache) string {
+	index := cahce.currentPage * 4 + 1
+	return cahce.cachedItems[int64(index)].text
+}
+
+func getThirdItemText(cahce *listDialogCache) string {
+	index := cahce.currentPage * 4 + 2
+	return cahce.cachedItems[int64(index)].text
+}
+
+func getFourthItemText(cahce *listDialogCache) string {
+	index := cahce.currentPage * 4 + 3
+	return cahce.cachedItems[int64(index)].text
+}
+
+func getFifthItemText(cahce *listDialogCache) string {
+	index := cahce.currentPage * 4 + 4
+	return cahce.cachedItems[int64(index)].text
 }
 
 func addList(data *processing.ProcessData) bool {
@@ -93,51 +156,77 @@ func addList(data *processing.ProcessData) bool {
 	return true
 }
 
-func (factory *listDialogFactory) createVariants(data *processing.ProcessData) (variants []dialog.Variant) {
+func moveForward(data *processing.ProcessData) bool {
+	data.Static.SetUserStateCurrentPage(data.UserId, data.Static.GetUserStateCurrentPage(data.UserId) + 1)
+	data.Static.Chat.SendDialog(data.ChatId, data.Static.MakeDialogFn("mn", data.UserId, data.Static))
+	return true
+}
+
+func moveBack(data *processing.ProcessData) bool {
+	data.Static.SetUserStateCurrentPage(data.UserId, data.Static.GetUserStateCurrentPage(data.UserId) - 1)
+	data.Static.Chat.SendDialog(data.ChatId, data.Static.MakeDialogFn("mn", data.UserId, data.Static))
+	return true
+}
+
+func (factory *listDialogFactory) createVariants(userId int64, staticData *processing.StaticProccessStructs) (variants []dialog.Variant) {
+	variants = make([]dialog.Variant, 0)
+	cache := getCache(userId, staticData)
+	
 	for _, variant := range factory.variants {
-		if variant.isActiveFn == nil || variant.isActiveFn(factory, data) {
-			if variants == nil {
-				variants = make([]dialog.Variant, 0)
+		if variant.isActiveFn == nil || variant.isActiveFn(cache) {
+			var text string
+			
+			if variant.textFn != nil {
+				text = variant.textFn(cache)
+			} else {
+				text = variant.text
 			}
 
 			variants = append(variants, dialog.Variant{
 				Id:   variant.id,
-				Text: variant.text,
+				Text: text,
 			})
 		}
 	}
 	return
 }
 
-func (factory *listDialogFactory) cacheItems(data *processing.ProcessData) {
-	if (factory.isInited) {
-		return
-	}
+func getCache(userId int64, staticData *processing.StaticProccessStructs) (cache *listDialogCache) {
 
-	factory.cachedItems = make(map[int64]string)
+	cache = &listDialogCache{}
+	
+	cache.cachedItems = make([]cachedItem, 0)
 
-	ids, names := data.Static.Db.GetUserLists(data.UserId)
+	ids, names := staticData.Db.GetUserLists(userId)
 	if len(ids) == len(names) {
 		for index, id := range ids {
-			factory.cachedItems[id] = names[index]
+			cache.cachedItems = append(cache.cachedItems, cachedItem{
+				id: id,
+				text: names[index],
+			})
 		}
 	}
 
-	factory.currentPage = data.Static.GetUserStateCurrentPage(data.UserId)
-	count := len(factory.cachedItems)
+	cache.currentPage = staticData.GetUserStateCurrentPage(userId)
+	count := len(cache.cachedItems)
 	if count > 2 {
-		factory.pagesCount = (count - 2) / 4 + 1
+		cache.pagesCount = (count - 2) / 4 + 1
 	} else {
-		factory.pagesCount = 1
+		cache.pagesCount = 1
+	}
+	
+	cache.countOnPage = count - cache.currentPage * 4
+	if cache.countOnPage > 5 {
+		cache.countOnPage = 4
 	}
 
-	factory.isInited = true
+	return
 }
 
-func (factory *listDialogFactory) MakeDialog(data *processing.ProcessData) *dialog.Dialog {
+func (factory *listDialogFactory) MakeDialog(userId int64, staticData *processing.StaticProccessStructs) *dialog.Dialog {
 	return &dialog.Dialog{
 		Text:     factory.text,
-		Variants: factory.createVariants(data),
+		Variants: factory.createVariants(userId, staticData),
 	}
 }
 

@@ -23,10 +23,10 @@ func (dialogManager *DialogManager) InitTextProcessors() {
 	dialogManager.textProcessors = getTextInputProcessorManager()
 }
 
-func (dialogManager *DialogManager) MakeDialog(dialogId string, data *processing.ProcessData) (dialog *dialog.Dialog) {
+func (dialogManager *DialogManager) MakeDialog(dialogId string, userId int64, staticData *processing.StaticProccessStructs) (dialog *dialog.Dialog) {
 	factory := dialogManager.getDialogFactory(dialogId)
 	if factory != nil {
-		dialog = factory.MakeDialog(data)
+		dialog = factory.MakeDialog(userId, staticData)
 		dialog.Id = dialogId
 	}
 	return

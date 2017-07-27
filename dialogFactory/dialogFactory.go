@@ -6,6 +6,6 @@ import (
 )
 
 type DialogFactory interface {
-	MakeDialog(data *processing.ProcessData) *dialog.Dialog
+	MakeDialog(userId int64, staticData *processing.StaticProccessStructs) *dialog.Dialog
 	ProcessVariant(variantId string, data *processing.ProcessData) bool
 }

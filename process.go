@@ -14,13 +14,13 @@ import (
 	"strings"
 )
 
-type ProcessorFunc func(*processing.ProcessData, *dialogManager.DialogManager)
+type ProcessorFunc func(*processing.ProcessData)
 
 type ProcessorFuncMap map[string]ProcessorFunc
 
-func startCommand(data *processing.ProcessData, dialogManager *dialogManager.DialogManager) {
+func startCommand(data *processing.ProcessData) {
 	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("hello_message"))
-	data.Static.Chat.SendDialog(data.ChatId, dialogManager.MakeDialog("mn", data))
+	data.Static.Chat.SendDialog(data.ChatId, data.Static.MakeDialogFn("mn", data.UserId, data.Static))
 }
 
 func makeUserCommandProcessors() ProcessorFuncMap {
@@ -29,10 +29,10 @@ func makeUserCommandProcessors() ProcessorFuncMap {
 	}
 }
 
-func processCommandByProcessors(data *processing.ProcessData, processors *ProcessorFuncMap, dialogManager *dialogManager.DialogManager) bool {
+func processCommandByProcessors(data *processing.ProcessData, processors *ProcessorFuncMap) bool {
 	processor, ok := (*processors)[data.Command]
 	if ok {
-		processor(data, dialogManager)
+		processor(data)
 	}
 
 	return ok
@@ -49,7 +49,7 @@ func processCommand(data *processing.ProcessData, dialogManager *dialogManager.D
 	}
 
 	// process static command
-	processed := processCommandByProcessors(data, processors, dialogManager)
+	processed := processCommandByProcessors(data, processors)
 	if processed {
 		return
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/gameraccoon/telegram-random-shuffle-bot/database"
+	"github.com/gameraccoon/telegram-random-shuffle-bot/dialog"
 	"github.com/gameraccoon/telegram-random-shuffle-bot/dialogFactories"
 	"github.com/gameraccoon/telegram-random-shuffle-bot/dialogManager"
 	"github.com/gameraccoon/telegram-random-shuffle-bot/processing"
@@ -85,6 +86,9 @@ func main() {
 		Db:     db,
 		Config: &config,
 		Trans:  trans,
+		MakeDialogFn: func(id string, userId int64, staticData *processing.StaticProccessStructs) *dialog.Dialog {
+			return dialogManager.MakeDialog(id, userId, staticData)
+		},
 	}
 
 	staticData.Init()
