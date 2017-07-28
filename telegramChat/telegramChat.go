@@ -44,8 +44,12 @@ func (telegramChat *TelegramChat) SendMessage(chatId int64, message string) {
 	telegramChat.bot.Send(msg)
 }
 
-func appendCommand(buffer *bytes.Buffer, dialogId string, variantId string, variantText string) {
-	buffer.WriteString(fmt.Sprintf("\n/%s_%s - %s", dialogId, variantId, variantText))
+func appendCommand(buffer *bytes.Buffer, dialogId string, variantId string, variantText string, additionalId string) {
+	if additionalId == "" {
+		buffer.WriteString(fmt.Sprintf("\n/%s_%s - %s", dialogId, variantId, variantText))
+	} else {
+		buffer.WriteString(fmt.Sprintf("\n/%s_%s_%s - %s", dialogId, variantId, additionalId, variantText))
+	}
 }
 
 func (telegramChat *TelegramChat) SendDialog(chatId int64, dialog *dialog.Dialog) {
@@ -54,7 +58,7 @@ func (telegramChat *TelegramChat) SendDialog(chatId int64, dialog *dialog.Dialog
 	buffer.WriteString(dialog.Text)
 
 	for _, variant := range dialog.Variants {
-		appendCommand(&buffer, dialog.Id, variant.Id, variant.Text)
+		appendCommand(&buffer, dialog.Id, variant.Id, variant.Text, variant.AdditionalId)
 	}
 
 	telegramChat.SendMessage(chatId, buffer.String())

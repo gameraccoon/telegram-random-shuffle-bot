@@ -244,6 +244,30 @@ func (database *Database) GetListItems(listId int64) (ids []int64, texts []strin
 	return
 }
 
+
+func (database *Database) GetListName(listId int64) (name string) {
+	rows, err := database.conn.Query(fmt.Sprintf("SELECT name FROM lists WHERE id=%d", listId))
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		err := rows.Scan(&name)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	} else {
+		err = rows.Err()
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Fatal("No list found")
+	}
+
+	return
+}
+
 func (database *Database) GetLastItem(listId int64) (item_id int64) {
 	rows, err := database.conn.Query(fmt.Sprintf("SELECT last_item_id FROM lists WHERE id=%d", listId))
 	if err != nil {
@@ -271,8 +295,28 @@ func (database *Database) SetLastItem(listId int64, lastItemId int64) {
 	database.execQuery(fmt.Sprintf("UPDATE lists SET last_item_id=%d WHERE id=%d", lastItemId, listId))
 }
 
-func (database *Database) CreateList(userId int64, name string) {
+func (database *Database) CreateList(userId int64, name string) (newListId int64) {
 	database.execQuery(fmt.Sprintf("INSERT INTO lists (user_id, name, last_item_id) VALUES (%d, '%s', -1)", userId, name))
+	
+	rows, err := database.conn.Query("SELECT last_insert_rowid()")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		err := rows.Scan(&newListId)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	} else {
+		err = rows.Err()
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Fatal("No list found")
+	}
+	return
 }
 
 func (database *Database) AddItemsToList(listId int64, items []string) {

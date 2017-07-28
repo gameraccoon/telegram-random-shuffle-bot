@@ -13,8 +13,13 @@ type StaticConfiguration struct {
 	ExtendedLog bool
 }
 
+type AwaitingTextProcessorData struct {
+	ProcessorId string
+	AdditionalId string
+}
+
 type UserState struct {
-	awaitingTextProcessor *string
+	awaitingTextProcessor *AwaitingTextProcessorData
 	currentPage int
 }
 
@@ -32,19 +37,13 @@ func (staticData *StaticProccessStructs) Init() {
 	staticData.userStates = make(map[int64]UserState)
 }
 
-func (staticData *StaticProccessStructs) SetUserStateTextProcessor(userId int64, proessor string) {
+func (staticData *StaticProccessStructs) SetUserStateTextProcessor(userId int64, proessor *AwaitingTextProcessorData) {
 	state := staticData.userStates[userId]
-	state.awaitingTextProcessor = &proessor
+	state.awaitingTextProcessor = proessor
 	staticData.userStates[userId] = state
 }
 
-func (staticData *StaticProccessStructs) ClearUserStateTextProcessor(userId int64) {
-	state := staticData.userStates[userId]
-	state.awaitingTextProcessor = nil
-	staticData.userStates[userId] = state
-}
-
-func (staticData *StaticProccessStructs) GetUserStateTextProcessor(userId int64) *string {
+func (staticData *StaticProccessStructs) GetUserStateTextProcessor(userId int64) *AwaitingTextProcessorData {
 	if state, ok := staticData.userStates[userId]; ok {
 		return state.awaitingTextProcessor
 	} else {

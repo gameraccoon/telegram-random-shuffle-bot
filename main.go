@@ -79,6 +79,7 @@ func main() {
 
 	dialogManager := &(dialogManager.DialogManager{})
 	dialogManager.RegisterDialogFactory("mn", dialogFactories.MakeListsDialogFactory(trans))
+	dialogManager.RegisterDialogFactory("li", dialogFactories.MakeListItemDialogFactory(trans))
 	dialogManager.InitTextProcessors()
 
 	staticData := &processing.StaticProccessStructs{

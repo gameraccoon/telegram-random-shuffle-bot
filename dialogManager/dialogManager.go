@@ -23,19 +23,19 @@ func (dialogManager *DialogManager) InitTextProcessors() {
 	dialogManager.textProcessors = getTextInputProcessorManager()
 }
 
-func (dialogManager *DialogManager) MakeDialog(dialogId string, userId int64, staticData *processing.StaticProccessStructs) (dialog *dialog.Dialog) {
+func (dialogManager *DialogManager) MakeDialog(dialogId string, id int64, staticData *processing.StaticProccessStructs) (dialog *dialog.Dialog) {
 	factory := dialogManager.getDialogFactory(dialogId)
 	if factory != nil {
-		dialog = factory.MakeDialog(userId, staticData)
+		dialog = factory.MakeDialog(id, staticData)
 		dialog.Id = dialogId
 	}
 	return
 }
 
-func (dialogManager *DialogManager) ProcessVariant(dialogId string, variantId string, data *processing.ProcessData) (processed bool) {
+func (dialogManager *DialogManager) ProcessVariant(dialogId string, variantId string, additionalId string, data *processing.ProcessData) (processed bool) {
 	factory := dialogManager.getDialogFactory(dialogId)
 	if factory != nil {
-		processed = factory.ProcessVariant(variantId, data)
+		processed = factory.ProcessVariant(variantId, additionalId, data)
 	}
 	return
 }

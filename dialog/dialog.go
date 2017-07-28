@@ -2,7 +2,7 @@ package dialog
 
 type Variant struct {
 	Id   string
-	Data string // additional id or some info that will be appended to a button/link
+	AdditionalId string // additional id or some info that will be appended to a button/link
 	Text string // text visible to the user
 }
 

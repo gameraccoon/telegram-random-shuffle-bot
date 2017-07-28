@@ -42,7 +42,14 @@ func processCommand(data *processing.ProcessData, dialogManager *dialogManager.D
 	// process dialogs
 	ids := strings.Split(data.Command, "_")
 	if len(ids) >= 2 {
-		processed := dialogManager.ProcessVariant(ids[0], ids[1], data)
+		dialogId := ids[0]
+		variantId := ids[1]
+		var additionalId string
+		if len(ids) > 2 {
+			additionalId = ids[2]
+		}
+
+		processed := dialogManager.ProcessVariant(dialogId, variantId, additionalId, data)
 		if processed {
 			return
 		}

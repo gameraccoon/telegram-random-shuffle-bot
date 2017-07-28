@@ -148,13 +148,15 @@ func TestCreateAndRemoveList(t *testing.T) {
 		assert.Equal(0, len(texts))
 	}
 
-	db.CreateList(id, "testlist")
+	listId := db.CreateList(id, "testlist")
 	{
 		ids, texts := db.GetUserLists(id)
 		assert.Equal(1, len(ids))
 		assert.Equal(1, len(texts))
 		if len(ids) > 0 && len(texts) > 0 {
+			assert.Equal(listId, ids[0])
 			assert.Equal("testlist", texts[0])
+			assert.Equal("testlist", db.GetListName(ids[0]))
 		}
 	}
 
