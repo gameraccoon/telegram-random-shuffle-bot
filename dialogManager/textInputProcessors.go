@@ -40,7 +40,7 @@ func processAddList(additionalId string, data *processing.ProcessData) bool {
 		ProcessorId: "addlistitems",
 		AdditionalId: strconv.FormatInt(newListId, 10),
 	})
-	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("say_list_added"))
+	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("say_wait_items"))
 	return true
 }
 

@@ -55,7 +55,7 @@ func appendCommand(buffer *bytes.Buffer, dialogId string, variantId string, vari
 func (telegramChat *TelegramChat) SendDialog(chatId int64, dialog *dialog.Dialog) {
 	var buffer bytes.Buffer
 
-	buffer.WriteString(dialog.Text)
+	buffer.WriteString(dialog.Text + "\n")
 
 	for _, variant := range dialog.Variants {
 		appendCommand(&buffer, dialog.Id, variant.Id, variant.Text, variant.AdditionalId)

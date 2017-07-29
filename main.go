@@ -17,7 +17,7 @@ import (
 
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	i18n.MustLoadTranslationFile("./data/strings/en-us.all.json")
+	//i18n.MustLoadTranslationFile("./data/strings/en-us.all.json")
 	i18n.MustLoadTranslationFile("./data/strings/ru-ru.all.json")
 }
 

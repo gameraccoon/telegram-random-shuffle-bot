@@ -15,6 +15,8 @@ type listItemVariantPrototype struct {
 	id string
 	text string
 	process func(string, *processing.ProcessData) bool
+	// nil if the variant is always active
+	isActiveFn func(int64, *processing.StaticProccessStructs) bool
 }
 
 type listItemDialogFactory struct {
@@ -28,6 +30,7 @@ func MakeListItemDialogFactory(trans i18n.TranslateFunc) dialogFactory.DialogFac
 				id: "delrand",
 				text: trans("delete_and_reroll"),
 				process: deleteAndGetRandom,
+				isActiveFn: isLastItemPresented,
 			},
 			listItemVariantPrototype{
 				id: "rand",
@@ -56,6 +59,11 @@ func MakeListItemDialogFactory(trans i18n.TranslateFunc) dialogFactory.DialogFac
 			},
 		},
 	})
+}
+
+func isLastItemPresented(listId int64, staticData *processing.StaticProccessStructs) bool {	
+	id, _ := staticData.Db.GetLastItem(listId)
+	return id != -1
 }
 
 func getRandom(additionalId string, data *processing.ProcessData) bool {
@@ -117,7 +125,6 @@ func getShuffled(additionalId string, data *processing.ProcessData) bool {
 	}
 	
 	data.Static.Chat.SendMessage(data.ChatId, strings.Join(texts[:], "\n"))
-	data.Static.Chat.SendDialog(data.ChatId, data.Static.MakeDialogFn("li", listId, data.Static))
 	return true
 }
 
@@ -126,7 +133,7 @@ func addItems(additionalId string, data *processing.ProcessData) bool {
 		ProcessorId: "addlistitems",
 		AdditionalId: additionalId,
 	})
-	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("say_list_added"))
+	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("say_wait_items"))
 	return true
 }
 
@@ -152,9 +159,9 @@ func (factory *listItemDialogFactory) getListItemDialogText(listId int64, static
 	ids, _ := staticData.Db.GetListItems(listId)
 	countText := strconv.FormatInt(int64(len(ids)), 10)
 	if id != -1 {
-		return fmt.Sprintf("%s\n%s\n%s", staticData.Db.GetListName(listId), countText, text)
+		return fmt.Sprintf("<b>%s</b> (%s)\n\n%s", staticData.Db.GetListName(listId), staticData.Trans("items") + countText, staticData.Trans("last_choosen") + "\n" + text)
 	} else {
-		return fmt.Sprintf("%s\n%s", staticData.Db.GetListName(listId), countText)
+		return fmt.Sprintf("<b>%s</b> (%s)", staticData.Db.GetListName(listId), staticData.Trans("items") + countText)
 	}
 }
 
@@ -162,11 +169,13 @@ func (factory *listItemDialogFactory) createVariants(listId int64, staticData *p
 	variants = make([]dialog.Variant, 0)
 	
 	for _, variant := range factory.variants {
-		variants = append(variants, dialog.Variant{
-			Id:   variant.id,
-			Text: variant.text,
-			AdditionalId: strconv.FormatInt(listId, 10),
-		})
+		if variant.isActiveFn == nil || variant.isActiveFn(listId, staticData) {
+			variants = append(variants, dialog.Variant{
+				Id:   variant.id,
+				Text: variant.text,
+				AdditionalId: strconv.FormatInt(listId, 10),
+			})
+		}
 	}
 	return
 }

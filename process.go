@@ -19,7 +19,6 @@ type ProcessorFunc func(*processing.ProcessData)
 type ProcessorFuncMap map[string]ProcessorFunc
 
 func startCommand(data *processing.ProcessData) {
-	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("hello_message"))
 	data.Static.Chat.SendDialog(data.ChatId, data.Static.MakeDialogFn("mn", data.UserId, data.Static))
 }
 
