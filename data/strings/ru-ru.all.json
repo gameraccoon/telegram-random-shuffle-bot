@@ -1,0 +1,18 @@
+{
+  "warn_unknown_command": { "other": "Неизвестная команда" },
+	"delete_and_reroll": { "other": "Удалить и выбрать новый" },
+	"reroll": { "other": "Выбрать случайный" },
+	"get_shuffled": { "other": "Получить перемешанный список" },
+	"add_btn": { "other": "Добавить пункты.." },
+	"remove_list": { "other": "Удалить список" },
+	"back_btn": { "other": "Назад" },
+	"fwd_btn": { "other": "Вперед" },
+	"add_list_btn": { "other": "Создать новый.." },
+	"say_enter_list_name": { "other": "Введите имя списка" },
+	"say_wait_items": { "other": "Введите пункты, каждый на новой строке" },
+	"say_items_added": { "other": "Успешно" },
+	"choose_list": { "other": "Выберите список" },
+	"items": { "other": "пунктов: " },
+	"last_choosen": { "other": "<b>Последний выбранный</b>: " }
+}
+
