@@ -268,24 +268,20 @@ func (database *Database) GetListName(listId int64) (name string) {
 	return
 }
 
-func (database *Database) GetLastItem(listId int64) (item_id int64) {
-	rows, err := database.conn.Query(fmt.Sprintf("SELECT last_item_id FROM lists WHERE id=%d", listId))
+func (database *Database) GetLastItem(listId int64) (item_id int64, item_text string) {
+	rows, err := database.conn.Query(fmt.Sprintf("SELECT a.last_item_id, b.text FROM lists AS a, list_items AS b WHERE a.id=%d AND a.last_item_id=b.id", listId))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	defer rows.Close()
 
 	if rows.Next() {
-		err := rows.Scan(&item_id)
+		err := rows.Scan(&item_id, &item_text)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
 	} else {
-		err = rows.Err()
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Fatal("No list found")
+		item_id = -1
 	}
 
 	return

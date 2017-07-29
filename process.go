@@ -39,6 +39,8 @@ func processCommandByProcessors(data *processing.ProcessData, processors *Proces
 }
 
 func processCommand(data *processing.ProcessData, dialogManager *dialogManager.DialogManager, processors *ProcessorFuncMap) {
+	// drop any text processors for the case wi will process a command
+	data.Static.SetUserStateTextProcessor(data.UserId, nil)
 	// process dialogs
 	ids := strings.Split(data.Command, "_")
 	if len(ids) >= 2 {
@@ -61,8 +63,9 @@ func processCommand(data *processing.ProcessData, dialogManager *dialogManager.D
 		return
 	}
 
-	// if we here it means that no command was processed
+	// if we here that means that no command was processed
 	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("warn_unknown_command"))
+	data.Static.Chat.SendDialog(data.ChatId, data.Static.MakeDialogFn("mn", data.UserId, data.Static))
 }
 
 func processPlainMessage(data *processing.ProcessData, dialogManager *dialogManager.DialogManager) {

@@ -234,19 +234,35 @@ func TestSetLastQuestion(t *testing.T) {
 		assert.Equal(0, len(texts))
 	}
 
-	db.CreateList(id, "testlist")
+	listId := db.CreateList(id, "testlist")
+	db.AddItemsToList(listId, []string{"one", "two"})
+	
 	ids, _ := db.GetUserLists(id)
 	if len(ids) > 0 {
 		listId := ids[0]
 		{
-			lastItem := db.GetLastItem(listId)
-			assert.Equal(int64(-1), lastItem)
+			lastItemId, _ := db.GetLastItem(listId)
+			assert.Equal(int64(-1), lastItemId)
 		}
 
-		db.SetLastItem(listId, 10)
+		itemId := int64(1)
+		db.SetLastItem(listId, itemId)
 		{
-			lastItem := db.GetLastItem(listId)
-			assert.Equal(int64(10), lastItem)
+			lastItemId, lastItemText := db.GetLastItem(listId)
+			assert.Equal(itemId, lastItemId)
+			itemIds, itemTexts := db.GetListItems(listId)
+			
+			var foundItemIndex int = -1
+			for i, id := range itemIds {
+				if (id == itemId) {
+					foundItemIndex = i
+					break
+				}
+			}
+			assert.NotEqual(-1, foundItemIndex)
+			if foundItemIndex != -1 {
+				assert.Equal(itemTexts[foundItemIndex], lastItemText)
+			}
 		}
 	}
 }
