@@ -140,17 +140,21 @@ func TestCreateAndRemoveList(t *testing.T) {
 	defer db.Disconnect()
 
 	var chatId int64 = 123
-	id := db.GetUserId(chatId)
+	userId := db.GetUserId(chatId)
 
 	{
-		ids, texts := db.GetUserLists(id)
+		ids, texts := db.GetUserLists(userId)
 		assert.Equal(0, len(ids))
 		assert.Equal(0, len(texts))
 	}
+	
+	assert.Equal(false, db.IsListExists(0))
+	assert.Equal(false, db.IsListExists(1))
 
-	listId := db.CreateList(id, "testlist")
+	listId := db.CreateList(userId, "testlist")
+	assert.Equal(true, db.IsListExists(listId))
 	{
-		ids, texts := db.GetUserLists(id)
+		ids, texts := db.GetUserLists(userId)
 		assert.Equal(1, len(ids))
 		assert.Equal(1, len(texts))
 		if len(ids) > 0 && len(texts) > 0 {
@@ -160,9 +164,10 @@ func TestCreateAndRemoveList(t *testing.T) {
 		}
 	}
 
-	db.DeleteList(id)
+	db.DeleteList(listId)
+	assert.Equal(false, db.IsListExists(listId))
 	{
-		ids, texts := db.GetUserLists(id)
+		ids, texts := db.GetUserLists(userId)
 		assert.Equal(0, len(ids))
 		assert.Equal(0, len(texts))
 	}
@@ -179,10 +184,10 @@ func TestAddingAndRemovingElementsToList(t *testing.T) {
 	defer db.Disconnect()
 
 	var chatId int64 = 123
-	id := db.GetUserId(chatId)
-	db.CreateList(id, "testlist")
+	userId := db.GetUserId(chatId)
+	db.CreateList(userId, "testlist")
 
-	ids, _ := db.GetUserLists(id)
+	ids, _ := db.GetUserLists(userId)
 	if len(ids) > 0 {
 		listId := ids[0]
 		{
@@ -226,18 +231,18 @@ func TestSetLastQuestion(t *testing.T) {
 	defer db.Disconnect()
 
 	var chatId int64 = 123
-	id := db.GetUserId(chatId)
+	userId := db.GetUserId(chatId)
 
 	{
-		ids, texts := db.GetUserLists(id)
+		ids, texts := db.GetUserLists(userId)
 		assert.Equal(0, len(ids))
 		assert.Equal(0, len(texts))
 	}
 
-	listId := db.CreateList(id, "testlist")
+	listId := db.CreateList(userId, "testlist")
 	db.AddItemsToList(listId, []string{"one", "two"})
 	
-	ids, _ := db.GetUserLists(id)
+	ids, _ := db.GetUserLists(userId)
 	if len(ids) > 0 {
 		listId := ids[0]
 		{

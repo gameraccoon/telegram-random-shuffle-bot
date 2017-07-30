@@ -14,7 +14,7 @@ import (
 type listItemVariantPrototype struct {
 	id string
 	text string
-	process func(string, *processing.ProcessData) bool
+	process func(int64, *processing.ProcessData) bool
 	// nil if the variant is always active
 	isActiveFn func(int64, *processing.StaticProccessStructs) bool
 }
@@ -66,13 +66,7 @@ func isLastItemPresented(listId int64, staticData *processing.StaticProccessStru
 	return id != -1
 }
 
-func getRandom(additionalId string, data *processing.ProcessData) bool {
-	listId, err := strconv.ParseInt(additionalId, 10, 64)
-	
-	if err != nil {
-		return false
-	}
-	
+func getRandom(listId int64, data *processing.ProcessData) bool {
 	ids, _ := data.Static.Db.GetListItems(listId)
 	
 	if len(ids) > 0 {
@@ -84,13 +78,7 @@ func getRandom(additionalId string, data *processing.ProcessData) bool {
 	return true
 }
 
-func deleteAndGetRandom(additionalId string, data *processing.ProcessData) bool {
-	listId, err := strconv.ParseInt(additionalId, 10, 64)
-	
-	if err != nil {
-		return false
-	}
-
+func deleteAndGetRandom(listId int64, data *processing.ProcessData) bool {
 	lastItem, _ := data.Static.Db.GetLastItem(listId)
 	if lastItem != -1 {
 		data.Static.Db.RemoveItem(lastItem)
@@ -110,13 +98,7 @@ func deleteAndGetRandom(additionalId string, data *processing.ProcessData) bool 
 	return true
 }
 
-func getShuffled(additionalId string, data *processing.ProcessData) bool {
-	listId, err := strconv.ParseInt(additionalId, 10, 64)
-	
-	if err != nil {
-		return false
-	}
-	
+func getShuffled(listId int64, data *processing.ProcessData) bool {
 	_, texts := data.Static.Db.GetListItems(listId)
 	
 	for i := range texts {
@@ -128,28 +110,22 @@ func getShuffled(additionalId string, data *processing.ProcessData) bool {
 	return true
 }
 
-func addItems(additionalId string, data *processing.ProcessData) bool {
+func addItems(listId int64, data *processing.ProcessData) bool {
 	data.Static.SetUserStateTextProcessor(data.UserId, &processing.AwaitingTextProcessorData{
 		ProcessorId: "addlistitems",
-		AdditionalId: additionalId,
+		AdditionalId: strconv.FormatInt(listId, 10),
 	})
 	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("say_wait_items"))
 	return true
 }
 
-func removeList(additionalId string, data *processing.ProcessData) bool {
-	listId, err := strconv.ParseInt(additionalId, 10, 64)
-	
-	if err != nil {
-		return false
-	}
-	
+func removeList(listId int64, data *processing.ProcessData) bool {
 	data.Static.Db.DeleteList(listId)
 	data.Static.Chat.SendDialog(data.ChatId, data.Static.MakeDialogFn("mn", data.UserId, data.Static))
 	return true
 }
 
-func backToLists(additionalId string, data *processing.ProcessData) bool {
+func backToLists(listId int64, data *processing.ProcessData) bool {
 	data.Static.Chat.SendDialog(data.ChatId, data.Static.MakeDialogFn("mn", data.UserId, data.Static))
 	return true
 }
@@ -188,9 +164,19 @@ func (factory *listItemDialogFactory) MakeDialog(listId int64, staticData *proce
 }
 
 func (factory *listItemDialogFactory) ProcessVariant(variantId string, additionalId string, data *processing.ProcessData) bool {
+	listId, err := strconv.ParseInt(additionalId, 10, 64)
+	
+	if err != nil {
+		return false
+	}
+	
+	if !data.Static.Db.IsListExists(listId) {
+		return false
+	}
+	
 	for _, variant := range factory.variants {
 		if variant.id == variantId {
-			variant.process(additionalId, data)
+			variant.process(listId, data)
 			return true
 		}
 	}
