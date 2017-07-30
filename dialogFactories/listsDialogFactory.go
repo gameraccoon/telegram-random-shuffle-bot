@@ -195,9 +195,9 @@ func moveForward(additionalId string, data *processing.ProcessData) bool {
 	} else {
 		pagesCount = 1
 	}
-	
+
 	currentPage := data.Static.GetUserStateCurrentPage(data.UserId)
-	
+
 	if currentPage + 1 < pagesCount {
 		data.Static.SetUserStateCurrentPage(data.UserId, currentPage + 1)
 	}
@@ -216,29 +216,33 @@ func moveBack(additionalId string, data *processing.ProcessData) bool {
 
 func openListItem(additionalId string, data *processing.ProcessData) bool {
 	id, err := strconv.ParseInt(additionalId, 10, 64)
-	
+
 	if err != nil {
 		return false
 	}
-	
-	data.Static.Chat.SendDialog(data.ChatId, data.Static.MakeDialogFn("li", id, data.Static))
-	return true
+
+	if data.Static.Db.IsListBelongsToUser(data.UserId, id) {
+		data.Static.Chat.SendDialog(data.ChatId, data.Static.MakeDialogFn("li", id, data.Static))
+		return true
+	} else {
+		return false
+	}
 }
 
 func (factory *listDialogFactory) createVariants(userId int64, staticData *processing.StaticProccessStructs) (variants []dialog.Variant) {
 	variants = make([]dialog.Variant, 0)
 	cache := getListDialogCache(userId, staticData)
-	
+
 	for _, variant := range factory.variants {
 		if variant.isActiveFn == nil || variant.isActiveFn(cache) {
 			var text string
-			
+
 			if variant.textFn != nil {
 				text = variant.textFn(cache)
 			} else {
 				text = variant.text
 			}
-			
+
 			var additionalId string
 
 			if variant.additionalIdFn != nil {
@@ -258,7 +262,7 @@ func (factory *listDialogFactory) createVariants(userId int64, staticData *proce
 func getListDialogCache(userId int64, staticData *processing.StaticProccessStructs) (cache *listDialogCache) {
 
 	cache = &listDialogCache{}
-	
+
 	cache.cachedItems = make([]cachedItem, 0)
 
 	ids, names := staticData.Db.GetUserLists(userId)
@@ -278,7 +282,7 @@ func getListDialogCache(userId int64, staticData *processing.StaticProccessStruc
 	} else {
 		cache.pagesCount = 1
 	}
-	
+
 	cache.countOnPage = count - cache.currentPage * 4
 	if cache.countOnPage > 5 {
 		cache.countOnPage = 4
@@ -297,8 +301,7 @@ func (factory *listDialogFactory) MakeDialog(userId int64, staticData *processin
 func (factory *listDialogFactory) ProcessVariant(variantId string, additionalId string, data *processing.ProcessData) bool {
 	for _, variant := range factory.variants {
 		if variant.id == variantId {
-			variant.process(additionalId, data)
-			return true
+			return variant.process(additionalId, data)
 		}
 	}
 	return false
