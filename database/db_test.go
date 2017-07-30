@@ -147,12 +147,12 @@ func TestCreateAndRemoveList(t *testing.T) {
 		assert.Equal(0, len(ids))
 		assert.Equal(0, len(texts))
 	}
-	
-	assert.Equal(false, db.IsListExists(0))
-	assert.Equal(false, db.IsListExists(1))
+
+	assert.False(db.IsListExists(0))
+	assert.False(db.IsListExists(1))
 
 	listId := db.CreateList(userId, "testlist")
-	assert.Equal(true, db.IsListExists(listId))
+	assert.True(db.IsListExists(listId))
 	{
 		ids, texts := db.GetUserLists(userId)
 		assert.Equal(1, len(ids))
@@ -165,7 +165,7 @@ func TestCreateAndRemoveList(t *testing.T) {
 	}
 
 	db.DeleteList(listId)
-	assert.Equal(false, db.IsListExists(listId))
+	assert.False(db.IsListExists(listId))
 	{
 		ids, texts := db.GetUserLists(userId)
 		assert.Equal(0, len(ids))
@@ -241,7 +241,7 @@ func TestSetLastQuestion(t *testing.T) {
 
 	listId := db.CreateList(userId, "testlist")
 	db.AddItemsToList(listId, []string{"one", "two"})
-	
+
 	ids, _ := db.GetUserLists(userId)
 	if len(ids) > 0 {
 		listId := ids[0]
@@ -256,7 +256,7 @@ func TestSetLastQuestion(t *testing.T) {
 			lastItemId, lastItemText := db.GetLastItem(listId)
 			assert.Equal(itemId, lastItemId)
 			itemIds, itemTexts := db.GetListItems(listId)
-			
+
 			var foundItemIndex int = -1
 			for i, id := range itemIds {
 				if (id == itemId) {
@@ -270,4 +270,29 @@ func TestSetLastQuestion(t *testing.T) {
 			}
 		}
 	}
+}
+
+
+func TestListBelongsToUser(t *testing.T) {
+	assert := require.New(t)
+	db := createDbAndConnect(t)
+	defer clearDb()
+	if db == nil {
+		t.Fail()
+		return
+	}
+	defer db.Disconnect()
+
+	userId1 := db.GetUserId(123)
+	userId2 := db.GetUserId(321)
+
+	list1Id := db.CreateList(userId1, "testlist")
+	list2Id := db.CreateList(userId2, "123")
+
+	assert.True(db.IsListBelongsToUser(userId1, list1Id))
+	assert.True(db.IsListBelongsToUser(userId2, list2Id))
+	assert.False(db.IsListBelongsToUser(userId1, list2Id))
+	assert.False(db.IsListBelongsToUser(userId2, list1Id))
+	// nonexistent list
+	assert.False(db.IsListBelongsToUser(userId1, -1))
 }

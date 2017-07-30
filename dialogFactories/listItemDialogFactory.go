@@ -61,19 +61,19 @@ func MakeListItemDialogFactory(trans i18n.TranslateFunc) dialogFactory.DialogFac
 	})
 }
 
-func isLastItemPresented(listId int64, staticData *processing.StaticProccessStructs) bool {	
+func isLastItemPresented(listId int64, staticData *processing.StaticProccessStructs) bool {
 	id, _ := staticData.Db.GetLastItem(listId)
 	return id != -1
 }
 
 func getRandom(listId int64, data *processing.ProcessData) bool {
 	ids, _ := data.Static.Db.GetListItems(listId)
-	
+
 	if len(ids) > 0 {
 		choosenId := ids[rand.Int63n(int64(len(ids)))]
 		data.Static.Db.SetLastItem(listId, choosenId)
 	}
-	
+
 	data.Static.Chat.SendDialog(data.ChatId, data.Static.MakeDialogFn("li", listId, data.Static))
 	return true
 }
@@ -84,28 +84,28 @@ func deleteAndGetRandom(listId int64, data *processing.ProcessData) bool {
 		data.Static.Db.RemoveItem(lastItem)
 		data.Static.Db.SetLastItem(listId, -1)
 	}
-	
+
 	ids, _ := data.Static.Db.GetListItems(listId)
-	
+
 	if len(ids) > 0 {
 		choosenId := ids[rand.Int63n(int64(len(ids)))]
 		data.Static.Db.SetLastItem(listId, choosenId)
 	} else {
 		data.Static.Db.SetLastItem(listId, -1)
 	}
-	
+
 	data.Static.Chat.SendDialog(data.ChatId, data.Static.MakeDialogFn("li", listId, data.Static))
 	return true
 }
 
 func getShuffled(listId int64, data *processing.ProcessData) bool {
 	_, texts := data.Static.Db.GetListItems(listId)
-	
+
 	for i := range texts {
-    j := rand.Intn(i + 1)
-    texts[i], texts[j] = texts[j], texts[i]
+	j := rand.Intn(i + 1)
+	texts[i], texts[j] = texts[j], texts[i]
 	}
-	
+
 	data.Static.Chat.SendMessage(data.ChatId, strings.Join(texts[:], "\n"))
 	return true
 }
@@ -143,7 +143,7 @@ func (factory *listItemDialogFactory) getListItemDialogText(listId int64, static
 
 func (factory *listItemDialogFactory) createVariants(listId int64, staticData *processing.StaticProccessStructs) (variants []dialog.Variant) {
 	variants = make([]dialog.Variant, 0)
-	
+
 	for _, variant := range factory.variants {
 		if variant.isActiveFn == nil || variant.isActiveFn(listId, staticData) {
 			variants = append(variants, dialog.Variant{
@@ -165,19 +165,18 @@ func (factory *listItemDialogFactory) MakeDialog(listId int64, staticData *proce
 
 func (factory *listItemDialogFactory) ProcessVariant(variantId string, additionalId string, data *processing.ProcessData) bool {
 	listId, err := strconv.ParseInt(additionalId, 10, 64)
-	
+
 	if err != nil {
 		return false
 	}
-	
-	if !data.Static.Db.IsListExists(listId) {
+
+	if !data.Static.Db.IsListBelongsToUser(data.UserId, listId) {
 		return false
 	}
-	
+
 	for _, variant := range factory.variants {
 		if variant.id == variantId {
-			variant.process(listId, data)
-			return true
+			return variant.process(listId, data)
 		}
 	}
 	return false

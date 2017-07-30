@@ -293,7 +293,7 @@ func (database *Database) SetLastItem(listId int64, lastItemId int64) {
 
 func (database *Database) CreateList(userId int64, name string) (newListId int64) {
 	database.execQuery(fmt.Sprintf("INSERT INTO lists (user_id, name, last_item_id) VALUES (%d, '%s', -1)", userId, name))
-	
+
 	rows, err := database.conn.Query("SELECT last_insert_rowid()")
 	if err != nil {
 		log.Fatal(err.Error())
@@ -335,8 +335,6 @@ func (database *Database) DeleteList(listId int64) {
 	database.execQuery(fmt.Sprintf("DELETE FROM lists WHERE id=%d", listId))
 }
 
-
-
 func (database *Database) IsListExists(listId int64) bool {
 	rows, err := database.conn.Query(fmt.Sprintf("SELECT COUNT(*) FROM lists WHERE id=%d", listId))
 	if err != nil {
@@ -353,7 +351,33 @@ func (database *Database) IsListExists(listId int64) bool {
 			if count > 1 || count < 0 {
 				log.Fatal("unique count of some listid is not 0 or 1")
 			}
-			
+
+			if count >= 1 {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func (database *Database) IsListBelongsToUser(userId int64, listId int64) bool {
+	rows, err := database.conn.Query(fmt.Sprintf("SELECT COUNT(*) FROM lists WHERE id=%d AND user_id=%d", listId, userId))
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		var count int
+		err := rows.Scan(&count)
+		if err != nil {
+			log.Fatal(err.Error())
+		} else {
+			if count > 1 || count < 0 {
+				log.Fatal("unique count of some listid record is not 0 or 1")
+			}
+
 			if count >= 1 {
 				return true
 			}
