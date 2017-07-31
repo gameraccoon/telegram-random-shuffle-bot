@@ -1,5 +1,5 @@
 {
-  "warn_unknown_command": { "other": "Неизвестная команда" },
+  "warn_unknown_command": { "other": "Устаревшая команда" },
 	"delete_and_reroll": { "other": "Удалить и выбрать новый" },
 	"reroll": { "other": "Выбрать случайный" },
 	"get_shuffled": { "other": "Получить перемешанный" },
