@@ -44,22 +44,32 @@ func (telegramChat *TelegramChat) SendMessage(chatId int64, message string) {
 	telegramChat.bot.Send(msg)
 }
 
-func appendCommand(buffer *bytes.Buffer, dialogId string, variantId string, variantText string, additionalId string) {
+func getCommand(dialogId string, variantId string, additionalId string) string {
 	if additionalId == "" {
-		buffer.WriteString(fmt.Sprintf("\n/%s_%s - %s", dialogId, variantId, variantText))
+		return fmt.Sprintf("/%s_%s", dialogId, variantId)
 	} else {
-		buffer.WriteString(fmt.Sprintf("\n/%s_%s_%s - %s", dialogId, variantId, additionalId, variantText))
+		return fmt.Sprintf("/%s_%s_%s", dialogId, variantId, additionalId)
 	}
 }
 
 func (telegramChat *TelegramChat) SendDialog(chatId int64, dialog *dialog.Dialog) {
 	var buffer bytes.Buffer
 
-	buffer.WriteString(dialog.Text + "\n")
+	buffer.WriteString(dialog.Text)
+	
+	markup := tgbotapi.NewInlineKeyboardMarkup()
 
 	for _, variant := range dialog.Variants {
-		appendCommand(&buffer, dialog.Id, variant.Id, variant.Text, variant.AdditionalId)
+			markup.InlineKeyboard = append(markup.InlineKeyboard, tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData(
+					variant.Text,
+					getCommand(dialog.Id, variant.Id, variant.AdditionalId),
+				),
+			))
 	}
-
-	telegramChat.SendMessage(chatId, buffer.String())
+	
+	msg := tgbotapi.NewMessage(chatId, buffer.String())
+	msg.ParseMode = "HTML"
+	msg.ReplyMarkup = &markup
+	telegramChat.bot.Send(msg)
 }
