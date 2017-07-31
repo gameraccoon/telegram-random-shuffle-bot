@@ -75,7 +75,7 @@ func processPlainMessage(data *processing.ProcessData, dialogManager *dialogMana
 	}
 }
 
-func processUpdate(update *tgbotapi.Update, staticData *processing.StaticProccessStructs, dialogManager *dialogManager.DialogManager, processors *ProcessorFuncMap) {
+func processMessageUpdate(update *tgbotapi.Update, staticData *processing.StaticProccessStructs, dialogManager *dialogManager.DialogManager, processors *ProcessorFuncMap) {
 	data := processing.ProcessData{
 		Static: staticData,
 		ChatId: update.Message.Chat.ID,
@@ -98,4 +98,23 @@ func processUpdate(update *tgbotapi.Update, staticData *processing.StaticProcces
 		data.Message = message
 		processPlainMessage(&data, dialogManager)
 	}
+}
+
+func processCallbackUpdate(update *tgbotapi.Update, staticData *processing.StaticProccessStructs, dialogManager *dialogManager.DialogManager, processors *ProcessorFuncMap) {
+	data := processing.ProcessData{
+		Static: staticData,
+		ChatId: int64(update.CallbackQuery.From.ID),
+		UserId: staticData.Db.GetUserId(int64(update.CallbackQuery.From.ID)),
+	}
+
+	message := update.CallbackQuery.Data
+	commandLen := strings.Index(message, " ")
+	if commandLen != -1 {
+		data.Command = message[1:commandLen]
+		data.Message = message[commandLen+1:]
+	} else {
+		data.Command = message[1:]
+	}
+
+	processCommand(&data, dialogManager, processors)
 }

@@ -106,9 +106,11 @@ func main() {
 	processors := makeUserCommandProcessors()
 
 	for update := range updates {
-		if update.Message == nil {
-			continue
+		if update.Message != nil {
+			processMessageUpdate(&update, staticData, dialogManager, &processors)
 		}
-		processUpdate(&update, staticData, dialogManager, &processors)
+		if update.CallbackQuery != nil {
+			processCallbackUpdate(&update, staticData, dialogManager, &processors)
+		}
 	}
 }
