@@ -107,6 +107,7 @@ func getShuffled(listId int64, data *processing.ProcessData) bool {
 	}
 
 	data.Static.Chat.SendMessage(data.ChatId, strings.Join(texts[:], "\n"))
+	data.Static.Chat.SendDialog(data.ChatId, data.Static.MakeDialogFn("li", listId, data.Static))
 	return true
 }
 
