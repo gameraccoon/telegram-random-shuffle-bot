@@ -292,7 +292,7 @@ func (database *Database) SetLastItem(listId int64, lastItemId int64) {
 }
 
 func (database *Database) CreateList(userId int64, name string) (newListId int64) {
-	database.execQuery(fmt.Sprintf("INSERT INTO lists (user_id, name, last_item_id) VALUES (%d, '%s', -1)", userId, name))
+	database.execQuery(fmt.Sprintf("INSERT INTO lists (user_id, name, last_item_id) VALUES (%d, '%s', -1)", userId, sanitizeString(name)))
 
 	rows, err := database.conn.Query("SELECT last_insert_rowid()")
 	if err != nil {
@@ -319,7 +319,7 @@ func (database *Database) AddItemsToList(listId int64, items []string) {
 	var buffer bytes.Buffer
 
 	for _, item := range items {
-		buffer.WriteString(fmt.Sprintf("INSERT INTO list_items (list_id, text) VALUES (%d, '%s');", listId, item))
+		buffer.WriteString(fmt.Sprintf("INSERT INTO list_items (list_id, text) VALUES (%d, '%s');", listId, sanitizeString(item)))
 	}
 
 	database.execQuery(fmt.Sprintf("BEGIN TRANSACTION;" +

@@ -185,7 +185,7 @@ func TestAddingAndRemovingElementsToList(t *testing.T) {
 
 	var chatId int64 = 123
 	userId := db.GetUserId(chatId)
-	db.CreateList(userId, "testlist")
+	db.CreateList(userId, "testlist'ad")
 
 	ids, _ := db.GetUserLists(userId)
 	if len(ids) > 0 {
@@ -196,14 +196,14 @@ func TestAddingAndRemovingElementsToList(t *testing.T) {
 			assert.Equal(0, len(texts))
 		}
 
-		db.AddItemsToList(listId, []string{"one", "two"})
+		db.AddItemsToList(listId, []string{"one'", "'two"})
 		{
 			ids, texts := db.GetListItems(listId)
 			assert.Equal(2, len(ids))
 			assert.Equal(2, len(texts))
 			if len(ids) > 1 && len(texts) > 1 {
-				assert.Equal("one", texts[0])
-				assert.Equal("two", texts[1])
+				assert.Equal("one'", texts[0])
+				assert.Equal("'two", texts[1])
 
 				db.RemoveItem(ids[0])
 			}
@@ -214,7 +214,7 @@ func TestAddingAndRemovingElementsToList(t *testing.T) {
 			assert.Equal(1, len(ids))
 			assert.Equal(1, len(texts))
 			if len(ids) > 0 && len(texts) > 0 {
-				assert.Equal("two", texts[0])
+				assert.Equal("'two", texts[0])
 			}
 		}
 	}
