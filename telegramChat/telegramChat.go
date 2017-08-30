@@ -38,10 +38,11 @@ func (telegramChat *TelegramChat) GetBotUsername() string {
 	return telegramChat.bot.Self.UserName
 }
 
-func (telegramChat *TelegramChat) SendMessage(chatId int64, message string) {
+func (telegramChat *TelegramChat) SendMessage(chatId int64, message string) (messageId int64) {
 	msg := tgbotapi.NewMessage(chatId, message)
 	msg.ParseMode = "HTML"
 	telegramChat.bot.Send(msg)
+	return
 }
 
 func getCommand(dialogId string, variantId string, additionalId string) string {
@@ -52,24 +53,33 @@ func getCommand(dialogId string, variantId string, additionalId string) string {
 	}
 }
 
-func (telegramChat *TelegramChat) SendDialog(chatId int64, dialog *dialog.Dialog) {
+func (telegramChat *TelegramChat) SendDialog(chatId int64, dialog *dialog.Dialog) (messageId int64) {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(dialog.Text)
 	
 	markup := tgbotapi.NewInlineKeyboardMarkup()
 
+	currentRow := []tgbotapi.InlineKeyboardButton{}
+	currentRowId := 0
 	for _, variant := range dialog.Variants {
-			markup.InlineKeyboard = append(markup.InlineKeyboard, tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(
+			if currentRowId != variant.RowId {
+				if len(currentRow) > 0 {
+					markup.InlineKeyboard = append(markup.InlineKeyboard, currentRow)
+				}
+				currentRow = []tgbotapi.InlineKeyboardButton{}
+				currentRowId = variant.RowId
+			}
+		currentRow = append(currentRow, tgbotapi.NewInlineKeyboardButtonData(
 					variant.Text,
 					getCommand(dialog.Id, variant.Id, variant.AdditionalId),
-				),
-			))
+		))
 	}
+	markup.InlineKeyboard = append(markup.InlineKeyboard, currentRow)
 	
 	msg := tgbotapi.NewMessage(chatId, buffer.String())
 	msg.ParseMode = "HTML"
 	msg.ReplyMarkup = &markup
 	telegramChat.bot.Send(msg)
+	return
 }

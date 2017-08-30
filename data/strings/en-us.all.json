@@ -1,18 +1,17 @@
 {
-  "warn_unknown_command": { "other": "Outdated command" },
+  "warn_unknown_command": { "other": "Unknown or outdated command" },
 	"delete_and_reroll": { "other": "Remove and reroll" },
 	"reroll": { "other": "Roll" },
 	"get_shuffled": { "other": "Get shuffled list" },
 	"add_btn": { "other": "Add items.." },
 	"remove_list": { "other": "Delete the list" },
-	"back_btn": { "other": "Beck" },
+	"back_btn": { "other": "Back" },
 	"fwd_btn": { "other": "Forward" },
 	"add_list_btn": { "other": "Create new.." },
 	"say_enter_list_name": { "other": "Send the name of your new list" },
 	"say_wait_items": { "other": "Send items of the new list. Each one on a new line." },
 	"say_items_added": { "other": "Sucessful" },
-	"choose_list": { "other": "Chose a list" },
+	"choose_list": { "other": "Choose a list" },
 	"items": { "other": "items: " },
 	"last_choosen": { "other": "<b>The last roll result</b>: " }
 }
-

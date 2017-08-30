@@ -1,37 +1,19 @@
-package dialogManager
+package dialogFactories
 
 import (
 	"github.com/gameraccoon/telegram-random-shuffle-bot/processing"
+	"github.com/gameraccoon/telegram-random-shuffle-bot/dialogManager"
 	"strconv"
 	"strings"
 )
 
-type textProcessorFunc func(string, *processing.ProcessData) bool
-
-type textProcessorsMap map[string]textProcessorFunc
-
-type textInputProcessorManager struct {
-	processors textProcessorsMap
-}
-
-func getTextInputProcessorManager() textInputProcessorManager {
-	return textInputProcessorManager {
-		processors : textProcessorsMap {
+func GetTextInputProcessorManager() dialogManager.TextInputProcessorManager {
+	return dialogManager.TextInputProcessorManager {
+		Processors : dialogManager.TextProcessorsMap {
 			"listname" : processAddList,
 			"addlistitems" : processAddItemsToList,
 		},
 	}
-}
-
-func (textProcessorManager *textInputProcessorManager) processText(data *processing.ProcessData) bool {
-	textProcessor := data.Static.GetUserStateTextProcessor(data.UserId)
-	if textProcessor != nil {
-		processor, ok := textProcessorManager.processors[textProcessor.ProcessorId]
-		if ok {
-			return processor(textProcessor.AdditionalId, data)
-		}
-	}
-	return false
 }
 
 func processAddList(additionalId string, data *processing.ProcessData) bool {

@@ -37,7 +37,7 @@ func processCommandByProcessors(data *processing.ProcessData, processors *Proces
 	return ok
 }
 
-func processCommand(data *processing.ProcessData, dialogManager *dialogManager.DialogManager, processors *ProcessorFuncMap) {
+func processCommand(data *processing.ProcessData, dialogManager *dialogManager.DialogManager, processors *ProcessorFuncMap) (succeeded bool) {
 	// drop any text processors for the case wi will process a command
 	data.Static.SetUserStateTextProcessor(data.UserId, nil)
 	// process dialogs
@@ -52,19 +52,20 @@ func processCommand(data *processing.ProcessData, dialogManager *dialogManager.D
 
 		processed := dialogManager.ProcessVariant(dialogId, variantId, additionalId, data)
 		if processed {
-			return
+			return true
 		}
 	}
 
 	// process static command
 	processed := processCommandByProcessors(data, processors)
 	if processed {
-		return
+		return true
 	}
 
 	// if we here that means that no command was processed
 	data.Static.Chat.SendMessage(data.ChatId, data.Static.Trans("warn_unknown_command"))
 	data.Static.Chat.SendDialog(data.ChatId, data.Static.MakeDialogFn("mn", data.UserId, data.Static))
+	return false
 }
 
 func processPlainMessage(data *processing.ProcessData, dialogManager *dialogManager.DialogManager) {
@@ -116,5 +117,16 @@ func processCallbackUpdate(update *tgbotapi.Update, staticData *processing.Stati
 		data.Command = message[1:]
 	}
 
-	processCommand(&data, dialogManager, processors)
+	isSucceeded := processCommand(&data, dialogManager, processors)
+	if isSucceeded {
+		// 		deleteConfig := tgbotapi.DeleteMessageConfig{
+		// 			ChatID: data.ChatId,
+		//			MessageID:,
+		// 		}
+
+		// 		_, err := tgbotapi.DeleteMessage(deleteConfig)
+		// 		if err != nil {
+
+		// 		}
+	}
 }

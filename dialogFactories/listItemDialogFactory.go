@@ -17,6 +17,7 @@ type listItemVariantPrototype struct {
 	process func(int64, *processing.ProcessData) bool
 	// nil if the variant is always active
 	isActiveFn func(int64, *processing.StaticProccessStructs) bool
+	rowId int
 }
 
 type listItemDialogFactory struct {
@@ -31,31 +32,37 @@ func MakeListItemDialogFactory(trans i18n.TranslateFunc) dialogFactory.DialogFac
 				text: trans("delete_and_reroll"),
 				process: deleteAndGetRandom,
 				isActiveFn: isLastItemPresented,
+				rowId:1,
 			},
 			listItemVariantPrototype{
 				id: "rand",
 				text: trans("reroll"),
 				process: getRandom,
+								rowId:1,
 			},
 			listItemVariantPrototype{
 				id: "mix",
 				text: trans("get_shuffled"),
 				process: getShuffled,
+								rowId:2,
 			},
 			listItemVariantPrototype{
 				id: "add",
 				text: trans("add_btn"),
 				process: addItems,
+								rowId:2,
 			},
 			listItemVariantPrototype{
 				id: "del",
 				text: trans("remove_list"),
 				process: removeList,
+								rowId:3,
 			},
 			listItemVariantPrototype{
 				id: "back",
 				text: trans("back_btn"),
 				process: backToLists,
+								rowId:3,
 			},
 		},
 	})
@@ -151,6 +158,7 @@ func (factory *listItemDialogFactory) createVariants(listId int64, staticData *p
 				Id:   variant.id,
 				Text: variant.text,
 				AdditionalId: strconv.FormatInt(listId, 10),
+				RowId: variant.rowId,
 			})
 		}
 	}

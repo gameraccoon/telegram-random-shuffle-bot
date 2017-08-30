@@ -232,6 +232,9 @@ func openListItem(additionalId string, data *processing.ProcessData) bool {
 func (factory *listDialogFactory) createVariants(userId int64, staticData *processing.StaticProccessStructs) (variants []dialog.Variant) {
 	variants = make([]dialog.Variant, 0)
 	cache := getListDialogCache(userId, staticData)
+	
+	row := 1
+	col := 0
 
 	for _, variant := range factory.variants {
 		if variant.isActiveFn == nil || variant.isActiveFn(cache) {
@@ -253,7 +256,14 @@ func (factory *listDialogFactory) createVariants(userId int64, staticData *proce
 				Id:   variant.id,
 				Text: text,
 				AdditionalId: additionalId,
+				RowId: row,
 			})
+			
+			col = col + 1
+			if col > 1 {
+				row = row + 1
+				col = 0
+			}
 		}
 	}
 	return

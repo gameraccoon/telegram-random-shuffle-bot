@@ -21,6 +21,7 @@ type AwaitingTextProcessorData struct {
 type UserState struct {
 	awaitingTextProcessor *AwaitingTextProcessorData
 	currentPage int
+	lastMessages []int64
 }
 
 type StaticProccessStructs struct {
